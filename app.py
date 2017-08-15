@@ -52,17 +52,56 @@ def init_tags_pool():
     for tag in tags_pool:
         tags_list.append(tag)
     return jsonify({"tags_list":tags_list})
-# 返回所有的结果
-# 取出所有的一类大标签
-# 调用方法：curl -u luoweis:yikezaojiao  http://localhost:5000/yikezaojiao/api/aboutTag/v1.0/level1
-@app.route("/yikezaojiao/api/aboutTag/v1.0/level1",methods=['GET'])
-# @auth.login_required
-def get_tasks():
-    red = red_yikezaojiao.connection()
-    name = red.get('name')
-    return jsonify({"level1":name})
 
+# 提取redis数据中经过初始化后所有的标签
 #
+# 调用方法：curl -u luoweis:yikezaojiao  http://localhost:5000/yikezaojiao/api/aboutTag/v1.0/tags
+@app.route("/yikezaojiao/api/aboutTag/v1.0/tags",methods=['GET'])
+# @auth.login_required
+def get_tags():
+    red = red_yikezaojiao.connection()
+    tags_pool = red.smembers("tags_pool")
+    tags_list = []
+    for tag in tags_pool:
+        tags_list.append(tag)
+
+    return jsonify({"tags_list":tags_list})
+#提取redis数据库大标签的数量在前端进行数据可视化
+@app.route("/yikezaojiao/api/aboutTag/v1.0/level1/count", methods=['GET'])
+# @auth.login_required
+def level1_tags_count():
+    red = red_yikezaojiao.connection()
+    level1_number = {}
+    for level in level1:
+        level1_number[level['detail']] = red.scard(level['detail'])
+
+    return jsonify({"level1_number": level1_number})
+#前端提交的数据在这里准备写入redis数据库中
+# # 前端调用方法： curl -i -H "Content-Type:application/json" -X POST -d '{"chooseLevel1":u"cf1","tag":u"尿不湿"}' http://localhost:5000/yikezaojiao/api/aboutTag/v1.0/save
+@app.route("/yikezaojiao/api/aboutTag/v1.0/save",methods=['POST'])
+# @auth.login_required
+def save_tags():
+    red = red_yikezaojiao.connection()
+    if not request.json or not 'chooseLevel1' in request.json:
+        abort(400)
+
+    if not request.json or not 'tag' in request.json:
+        abort(400)
+    saveTag = {
+        "chooseLevel1":request.json['chooseLevel1'],
+        "tag":request.json['tag']
+    }
+    red.sadd(request.json['chooseLevel1'],request.json['tag'])
+    level1_tags_number = red.scard(request.json['chooseLevel1'])
+    #将已经分配的标签从"tags_pool"中移到"tags_pool_removed"中
+    red.smove("tags_pool","tags_pool_removed",request.json['tag'])
+    # tags_pool = red.smembers("tags_pool")
+    # tags_list = []
+    # for tag in tags_pool:
+    #     tags_list.append(tag)
+    return jsonify({"level1_tags_number":level1_tags_number})
+
+
 # # 查询某一个id的信息
 # @app.route("/yikezaojiao/api/v1.0/tasks/<int:task_id>",methods=['GET'])
 # @auth.login_required
