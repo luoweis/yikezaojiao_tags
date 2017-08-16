@@ -5,10 +5,9 @@ from flask import abort
 from flask import make_response
 from flask import request
 from flask_httpauth import HTTPBasicAuth
-from tagLevel1 import level1
 from yikezaojiao_redis import yikezaojiao_redis
+from tagLevel1 import level1
 app = Flask(__name__)
-
 
 #加载开发配置
 app.config.from_object(DevConfig)
@@ -59,13 +58,21 @@ def init_tags_pool():
 @app.route("/yikezaojiao/api/aboutTag/v1.0/tags",methods=['GET'])
 # @auth.login_required
 def get_tags():
+
     red = red_yikezaojiao.connection()
     tags_pool = red.smembers("tags_pool")
     tags_list = []
     for tag in tags_pool:
         tags_list.append(tag)
-
-    return jsonify({"tags_list":tags_list})
+    # 列出每个大类中的子标签
+    level1_tags = []
+    for level in level1:
+        level1_tags.append({
+            'level1':level['detail'],
+            'count':red.scard(level['detail']),
+            'tags':list(red.smembers(level['detail']))#将set格式通过list转换成列表否则json化会报错
+        })
+    return jsonify({"tags_list":tags_list,"level1_tags":level1_tags})
 #提取redis数据库大标签的数量在前端进行数据可视化
 @app.route("/yikezaojiao/api/aboutTag/v1.0/level1/count", methods=['GET'])
 # @auth.login_required
@@ -87,20 +94,33 @@ def save_tags():
 
     if not request.json or not 'tag' in request.json:
         abort(400)
-    saveTag = {
-        "chooseLevel1":request.json['chooseLevel1'],
-        "tag":request.json['tag']
-    }
-    red.sadd(request.json['chooseLevel1'],request.json['tag'])
-    level1_tags_number = red.scard(request.json['chooseLevel1'])
+    #初始化
+    save_success=[]
+    for level1 in request.json['chooseLevel1']:
+        if level1['check']:#如果是true
+            ok = red.sadd(level1['detail'],request.json['tag'])
+            if ok==1:
+                save_success.append(
+                    {"tagNow":request.json['tag'],"count":red.scard(level1['detail']),"level1":level1['detail']}
+                )
+            else:
+                pass
     #将已经分配的标签从"tags_pool"中移到"tags_pool_removed"中
     red.smove("tags_pool","tags_pool_removed",request.json['tag'])
-    # tags_pool = red.smembers("tags_pool")
-    # tags_list = []
-    # for tag in tags_pool:
-    #     tags_list.append(tag)
-    return jsonify({"level1_tags_number":level1_tags_number})
 
+    return jsonify({"saved":save_success})
+#从标签池中删除指定的标签，提前预处理
+@app.route("/yikezaojiao/api/aboutTag/v1.0/delete/<string:tag>", methods=['GET'])
+# @auth.login_required
+def delete_tag(tag):
+    red = red_yikezaojiao.connection()
+    # red.srem('tags_pool',tag)
+    # 将已经分配的标签从"tags_pool"中移到"tags_pool_removed"中
+    ok = red.smove("tags_pool", "tags_pool_delete", tag)
+    if ok:
+        return jsonify({"res": 'ok'})
+    else:
+        return jsonify({"res": 'error'})
 
 # # 查询某一个id的信息
 # @app.route("/yikezaojiao/api/v1.0/tasks/<int:task_id>",methods=['GET'])

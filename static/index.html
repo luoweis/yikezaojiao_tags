@@ -11,6 +11,7 @@
 <link href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
 <link rel="stylesheet" href="src/s8CyrcleInfoBox.css" media="screen" charset="utf-8">
 <link rel="stylesheet" href="css/style.css" media="screen" charset="utf-8">
+	<link rel="stylesheet" href="css/yikezaojiao.css" media="screen" charset="utf-8">
 
 </head>
 <body>
@@ -21,9 +22,10 @@
 			<div class="circle2">
 				<ul class="circleWrapper wStyle2">
 					<li v-for="level1 in ykzjTagLevel1">
-						<div class="circleFeature fStyle2" :data-cyrcleBox="[level1.id]"><span>{{ level1.name }}</span></div>
+						<div v-if="level1.check" class="circleFeature fStyle2" :data-cyrcleBox="[level1.id]" @click="checkLevel1(level1.num)"><span style="color:darkgreen;">{{ level1.name }}</span><i class="fa fa-check"></i></div>
+						<div v-else class="circleFeature fStyle2" :data-cyrcleBox="[level1.id]" @click="checkLevel1(level1.num)"><span>{{ level1.name }}</span></div>
 						<div class="circleBox innerStyle2" :id="[level1.id]"><strong style="color:red;">{{ tagNow }}</strong><br><br><strong style="font-size:16px;">{{ level1.detail }}</strong><br>
-							<br><a @click="write2Database(level1.detail)"><i class="fa fa-sign-in fa-lg"></i>&nbsp; 入库</a>
+							<br><a @click="write2Database(level1.detail)"><i class="fa fa-sign-in fa-lg"></i>&nbsp; 确定</a>
 						</div>
 					</li>
 					<!--<li>-->
@@ -34,13 +36,30 @@
 					<!--</li>-->
 				</ul>
 			</div>
+			<div style="width: 600px;" >
+				<!--<div v-for="til in tagsInLevel1" class="showTags" >-->
+					<!--<strong>{{ til.level1 }}:</strong>-->
+					<!--<a v-for="tag in til.tags ">-->
+						<!--{{tag}}-->
+					<!--</a>-->
+
+				<!--</div>-->
+				<strong>标签池:</strong>
+				<a v-for="tag in allTags" @click="deleteFromTagsPool(tag)" :id="[tag]" >
+					{{tag}}
+				</a>
+			</div>
 		</div>
 		<div class="col-sm-3">
-			<div v-if="welcome">
-				<p>{{welcome}}</p>
+			<div v-if="tagNow" v-for="choose in ykzjTagLevel1">
+				<p v-if="choose.check">
+					{{ tagNow }} 准备放入 {{choose.detail}}
+				</p>
 			</div>
-			<div v-else>
-				<p>{{ lastTag }} 已加入 {{chooseLevel1}}</p>
+			<div v-if="saved">
+			<p v-for="save  in saved">
+					{{save.tagNow}}=><strong style="color:red">{{ save.level1}}</strong>;标签数量：{{ save.count }}
+			</p>
 			</div>
 		</div>
 		<div class="col-sm-4">

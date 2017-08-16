@@ -3,7 +3,7 @@
  */
 // 基于准备好的dom，初始化echarts实例
 var myChart1 = echarts.init(document.getElementById('main1'));
-app.title = '标签系统';
+app.title = '';
 var dmax = 0;
 option1 = {
     title: {
@@ -71,7 +71,7 @@ function changeData1() {
             option1.series[0].data[0].value[4]=res.level1_number['社会交往'];
             option1.series[0].data[0].value[5]=res.level1_number['逻辑思维'];
             // dmax = sum(option1.series[0].data[0].value);
-            dmax = Math.max.apply(null, option1.series[0].data[0].value)
+            dmax = Math.max.apply(null, option1.series[0].data[0].value) * 1.2;
             option1.radar[0].indicator[0].max=dmax;
             option1.radar[0].indicator[1].max=dmax;
             option1.radar[0].indicator[2].max=dmax;
@@ -94,4 +94,4 @@ changeData1();
 
 setInterval(function (){
     changeData1();
-}, 11000);
+}, 31000);

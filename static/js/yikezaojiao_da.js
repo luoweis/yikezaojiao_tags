@@ -82,4 +82,4 @@ changeData();
 
 setInterval(function (){
     changeData();
-}, 10000);
+}, 20000);
