@@ -25,8 +25,15 @@ var yikezaojiao = new Vue({
         saved:{},
         tagsInLevel1:[],
         allTags:[],
+        deletedTags:[],
+        dealTags:[],
         welcome:"一刻早教标签系统，欢迎使用！",
-        ykzjTagLevel1:level1Init
+        ykzjTagLevel1:level1Init,
+        isA:true,
+        isShow:true,
+        isShowDelete:true,
+        availabilityNum:'',//可用标签池中的标签数量
+        deletedNum:''//删除标签池中的标签数量
     },
 
     beforeCreate:function () {
@@ -47,16 +54,20 @@ var yikezaojiao = new Vue({
                     _self.allTags = res.tags_list;
                     yikezaojiao.$data.tagNow = res.tags_list[0];
                     yikezaojiao.$data.tagsInLevel1 = res.level1_tags;
+                    yikezaojiao.$data.deletedTags=res.delete_tags_list;
+                    yikezaojiao.$data.dealTags=res.deal_tags_list;
+                    _self.availabilityNum = res.tags_list.length;
+                    _self.deletedNum = res.delete_tags_list.length;
                     // console.log(res.level1_tags)
                 }
             });
         });
     },
     methods:{
+        //保存某个标签的方法
         write2Database:function(levelName){
             var that = this;
             yikezaojiao.$data.lastTag=yikezaojiao.$data.tagNow;//上一个标签
-            // yikezaojiao.$data.chooseLevel1 = levelName;//选择的一类标签
             // 写入redis数据库的过程
             var url = host+ "/aboutTag/v1.0/save";
             $.ajax({
@@ -91,8 +102,11 @@ var yikezaojiao = new Vue({
                         {id:'cf6',name:'逻辑',detail:'逻辑思维',check:false,num:6}
                         ];
                     // console.log(level1Init);
-                    yikezaojiao.$data.saved = data.saved
-                    console.log(data.saved)
+                    yikezaojiao.$data.saved = data.saved;
+                    yikezaojiao.$data.dealTags.unshift(that.lastTag);
+                    yikezaojiao.$data.allTags.remove(that.lastTag);
+                    // console.log(data.saved)
+
 
                 }
             });
@@ -103,21 +117,49 @@ var yikezaojiao = new Vue({
             
         },
         checkLevel1:function (levelName) {
-            console.log(levelName);
+            // console.log(levelName);
             var that = this;
             yikezaojiao.$data.ykzjTagLevel1[levelName-1].check = !yikezaojiao.$data.ykzjTagLevel1[levelName-1].check;
             // console.log(yikezaojiao.$data.ykzjTagLevel1[levelName-1].check)
         },
+        //将某个tag从可用标签池中删除
         deleteFromTagsPool:function (tag) {
             // alert("delete"+tag)
-
+            var that = this;
             this.$nextTick(function () {
                 var url = host + "/aboutTag/v1.0/delete/"+tag;
                 $.ajax({
                     type: "GET",
                     url: url,
                     success:function(res) {
+                        //首先移除标签池中的指定tag
                         yikezaojiao.$data.allTags.remove(tag);
+                        //插入到删除标签池的前端
+                        yikezaojiao.$data.deletedTags.unshift(tag);
+                        //转换现在的要处理的标签
+                        if(yikezaojiao.$data.tagNow=tag) {
+                            yikezaojiao.$data.tagNow = yikezaojiao.$data.allTags[0]
+                            that.availabilityNum = that.allTags.length;
+                            that.deletedNum = that.deletedTags.length;
+                        }
+                        // console.log(res.level1_tags)
+                    }
+                });
+            });
+        },
+        recoveryFromDeleteTagsPool:function (tag) {
+            // alert("delete"+tag)
+            var that = this;
+            this.$nextTick(function () {
+                var url = host + "/aboutTag/v1.0/recovery/"+tag;
+                $.ajax({
+                    type: "GET",
+                    url: url,
+                    success:function(res) {
+                        yikezaojiao.$data.deletedTags.remove(tag);
+                        yikezaojiao.$data.allTags.unshift(tag);
+                        that.availabilityNum = that.allTags.length;
+                        that.deletedNum = that.deletedTags.length;
                         // console.log(res.level1_tags)
                     }
                 });
@@ -129,19 +171,28 @@ var yikezaojiao = new Vue({
         },
         hiddenDelete:function(tag){
             document.getElementById(tag).innerHTML=tag+" ";
+        },
+        hiddenAllTags:function () {
+            var that = this;
+            that.isShow = !that.isShow;
+        },
+        hiddenDeleteTags:function () {
+            var that = this;
+            that.isShowDelete = !that.isShowDelete;
         }
     }
 });
 
+//列表删除指定的元素
 Array.prototype.indexOf = function(val) {
-for (var i = 0; i < this.length; i++) {
-if (this[i] == val) return i;
+    for (var i = 0; i < this.length; i++) {
+        if (this[i] == val) return i;
 }
 return -1;
 };
 Array.prototype.remove = function(val) {
-var index = this.indexOf(val);
-if (index > -1) {
-this.splice(index, 1);
-}
+    var index = this.indexOf(val);
+        if (index > -1) {
+        this.splice(index, 1);
+    }
 };

@@ -39,14 +39,15 @@ def bad_request(error):
 
 
 
-#初始化标签库
+#初始化动作
+#删除
 # 调用方法：curl -u luoweis:yikezaojiao  http://localhost:5000/yikezaojiao/api/aboutTag/v1.0/init
 @app.route("/yikezaojiao/api/aboutTag/v1.0/init",methods=['GET'])
 @auth.login_required
 def init_tags_pool():
     red = red_yikezaojiao.connection()
-    red.sadd('tags_pool','尿不湿','发育期','玩具','开始说话','湿疹','数数','孕4周')
-    tags_pool = red.smembers("tags_pool")
+    # red.sadd('tags_pool','尿不湿','发育期','玩具','开始说话','湿疹','数数','孕4周')
+    tags_pool = red.smembers(DevConfig.redis_key_all_tags)
     tags_list=[]
     for tag in tags_pool:
         tags_list.append(tag)
@@ -60,10 +61,9 @@ def init_tags_pool():
 def get_tags():
 
     red = red_yikezaojiao.connection()
-    tags_pool = red.smembers("tags_pool")
-    tags_list = []
-    for tag in tags_pool:
-        tags_list.append(tag)
+    tags_pool = list(red.smembers(DevConfig.redis_key_all_tags))
+    delete_tags_pool = list(red.smembers(DevConfig.redis_key_delete_tag))
+    deal_tags_pool = list(red.smembers(DevConfig.redis_key_deal_tag))
     # 列出每个大类中的子标签
     level1_tags = []
     for level in level1:
@@ -72,7 +72,7 @@ def get_tags():
             'count':red.scard(level['detail']),
             'tags':list(red.smembers(level['detail']))#将set格式通过list转换成列表否则json化会报错
         })
-    return jsonify({"tags_list":tags_list,"level1_tags":level1_tags})
+    return jsonify({"tags_list":tags_pool,"deal_tags_list":deal_tags_pool,"level1_tags":level1_tags,"delete_tags_list":delete_tags_pool})
 #提取redis数据库大标签的数量在前端进行数据可视化
 @app.route("/yikezaojiao/api/aboutTag/v1.0/level1/count", methods=['GET'])
 # @auth.login_required
@@ -105,83 +105,36 @@ def save_tags():
                 )
             else:
                 pass
-    #将已经分配的标签从"tags_pool"中移到"tags_pool_removed"中
-    red.smove("tags_pool","tags_pool_removed",request.json['tag'])
+    #将已经分配的标签从可用标签池中移动到已处理的标签池中
+    red.smove(DevConfig.redis_key_all_tags,DevConfig.redis_key_deal_tag,request.json['tag'])
 
     return jsonify({"saved":save_success})
-#从标签池中删除指定的标签，提前预处理
+#从可用标签池中删除指定的标签，提前预处理
 @app.route("/yikezaojiao/api/aboutTag/v1.0/delete/<string:tag>", methods=['GET'])
 # @auth.login_required
 def delete_tag(tag):
     red = red_yikezaojiao.connection()
     # red.srem('tags_pool',tag)
     # 将已经分配的标签从"tags_pool"中移到"tags_pool_removed"中
-    ok = red.smove("tags_pool", "tags_pool_delete", tag)
+    ok = red.smove(DevConfig.redis_key_all_tags, DevConfig.redis_key_delete_tag, tag)
     if ok:
         return jsonify({"res": 'ok'})
     else:
         return jsonify({"res": 'error'})
 
-# # 查询某一个id的信息
-# @app.route("/yikezaojiao/api/v1.0/tasks/<int:task_id>",methods=['GET'])
+# 从已删除池中恢复指定的标签到可用标签池中
+@app.route("/yikezaojiao/api/aboutTag/v1.0/recovery/<string:tag>", methods=['GET'])
 # @auth.login_required
-# def get_task(task_id):
-#     task = filter(lambda t:t['id'] == task_id,tasks)
-#     if len(task) == 0:
-#         abort(404)
-#     return jsonify({"tasks":task[0]})
-#
-#
-# #添加一个task
-# # 采用方法 POST
-# # 前端调用方法： curl -i -H "Content-Type:application/json" -X POST -d '{"title":u"read a book"}' http://localhost:5000/yikezaojiao/api/v1.0/tasks
-#
-# @app.route("/yikezaojiao/api/v1.0/tasks",methods=['POST'])
-# @auth.login_required
-# def create_task():
-#     if not request.json or not 'title' in request.json:
-#         abort(400)
-#     task = {
-#         'id':tasks[-1]['id'] + 1,
-#         'title':request.json['title'],
-#         'description':request.json.get('description',""),
-#         'done':request.json.get('done',False)
-#     }
-#     tasks.append(task)
-#     return jsonify({"tasks": tasks})
-#
-# # 修改指定的task
-# # PUT方法
-# # 前端调用方法：curl -i -H "Content-Type:application/json" -X PUT -d '{"done":11,"description":"not unicode"}' http://localhost:5000/yikezaojiao/api/v1.0/tasks/1
-# @app.route("/yikezaojiao/api/v1.0/tasks/<int:task_id>",methods=["PUT"])
-# @auth.login_required
-# def update_task(task_id):
-#     task = filter(lambda t:t['id']==task_id,tasks)
-#     if len(task) == 0:
-#         abort(404)
-#     if not request.json:
-#         abort(400)
-#     if 'title' in request.json and type(request.json['title']) !=unicode:
-#         abort(400)
-#     if 'description' in request.json and type(request.json['description']) != unicode:
-#         abort(400)
-#     if 'done' in request.json and type(request.json['done']) is not bool:
-#         abort(400)
-#     task[0]['title'] = request.json.get('title',task[0]['title'])
-#     task[0]['description'] = request.json.get('description', task[0]['description'])
-#     task[0]['done'] = request.json.get('done', task[0]['done'])
-#     return jsonify({"task":task[0]})
-# # 删除指定的task
-# # delete
-# # 调用方法：curl -i -H "Content-Type:application/json" -X DELETE http://localhost:5000/yikezaojiao/api/v1.0/tasks/2
-# @app.route("/yikezaojiao/api/v1.0/tasks/<int:task_id>",methods=["DELETE"])
-# @auth.login_required
-# def delete_task(task_id):
-#     task = filter(lambda t:t["id"] == task_id,tasks)
-#     if len(task) == 0:
-#         abort(400)
-#     tasks.remove(task[0])
-#     return jsonify({"result": True})
+def recovery_tag(tag):
+    red = red_yikezaojiao.connection()
+
+    # 将已经分配的标签从"tags_pool_delete"中移到"tags_pool"中
+    ok = red.smove(DevConfig.redis_key_delete_tag, DevConfig.redis_key_all_tags, tag)
+    if ok:
+        return jsonify({"res": 'ok'})
+    else:
+        return jsonify({"res": 'error'})
+
 
 if __name__ == "__main__":
     app.run()
