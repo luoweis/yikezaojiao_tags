@@ -91,7 +91,11 @@ def level1_tags_count():
     for level in level1:
         level1_number[level['detail']] = red.scard(level['detail'])
 
-    return jsonify({"level1_number": level1_number})
+    res = make_response(jsonify({"level1_number": level1_number}))
+    res.headers['Access-Control-Allow-Origin'] = '*'
+    res.headers['Access-Control-Allow-Methods'] = 'POST'
+    res.headers['Access-Control-Allow-Headers'] = 'x-requested-with,content-type'
+    return res
 #前端提交的数据在这里准备写入redis数据库中
 # # 前端调用方法： curl -i -H "Content-Type:application/json" -X POST -d '{"chooseLevel1":u"cf1","tag":u"尿不湿"}' http://localhost:5000/yikezaojiao/api/aboutTag/v1.0/save
 @app.route("/yikezaojiao/api/aboutTag/v1.0/save",methods=['POST'])
@@ -117,7 +121,11 @@ def save_tags():
     #将已经分配的标签从可用标签池中移动到已处理的标签池中
     red.smove(DevConfig.redis_key_all_tags,DevConfig.redis_key_deal_tag,request.json['tag'])
 
-    return jsonify({"saved":save_success})
+    res = make_response(jsonify({"saved":save_success}))
+    res.headers['Access-Control-Allow-Origin'] = '*'
+    res.headers['Access-Control-Allow-Methods'] = 'POST'
+    res.headers['Access-Control-Allow-Headers'] = 'x-requested-with,content-type'
+    return res
 #从可用标签池中删除指定的标签，提前预处理
 @app.route("/yikezaojiao/api/aboutTag/v1.0/delete/<string:tag>", methods=['GET'])
 # @auth.login_required
@@ -146,7 +154,7 @@ def recovery_tag(tag):
 
 
 if __name__ == "__main__":
-    app.run()
+    app.run(host='0.0.0.0',port=8080)
 
 
 #链接数据库
