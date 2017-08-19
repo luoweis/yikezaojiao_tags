@@ -1,7 +1,8 @@
 /**
  * Created by luoweis on 2017/8/10.
  */
-var host = "http://127.0.0.1:5000/yikezaojiao/api";
+var server = "http://211.159.153.82:8080";
+var host = server + "/yikezaojiao/api";
 var id = 0;
 var level1Init =
     [

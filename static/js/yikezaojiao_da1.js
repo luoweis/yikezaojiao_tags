@@ -47,7 +47,8 @@ option1 = {
     ]
 };
 // myChart1.setOption(option1);
-var host = "http://127.0.0.1:5000/yikezaojiao/api";
+var server = "http://211.159.153.82:8080";
+var host = server + "/yikezaojiao/api";
 var url = host + "/aboutTag/v1.0/level1/count";
 
 function changeData1() {
