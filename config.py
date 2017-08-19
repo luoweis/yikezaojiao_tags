@@ -4,7 +4,8 @@ class Config(object):
     pass
 
 class ProdConfig(Config):
-    hello_word = "product configure"
+    word = "product configure"
+    
 class DevConfig(Config):
     #Debug
     DEBUG = True
