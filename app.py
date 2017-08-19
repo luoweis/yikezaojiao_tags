@@ -134,10 +134,13 @@ def delete_tag(tag):
     # red.srem('tags_pool',tag)
     # 将已经分配的标签从"tags_pool"中移到"tags_pool_removed"中
     ok = red.smove(DevConfig.redis_key_all_tags, DevConfig.redis_key_delete_tag, tag)
+
     if ok:
-        return jsonify({"res": 'ok'})
-    else:
-        return jsonify({"res": 'error'})
+        res = make_response(jsonify({"res": 'ok'}))
+        res.headers['Access-Control-Allow-Origin'] = '*'
+        res.headers['Access-Control-Allow-Methods'] = 'POST'
+        res.headers['Access-Control-Allow-Headers'] = 'x-requested-with,content-type'
+        return res
 
 # 从已删除池中恢复指定的标签到可用标签池中
 @app.route("/yikezaojiao/api/aboutTag/v1.0/recovery/<string:tag>", methods=['GET'])
@@ -148,9 +151,11 @@ def recovery_tag(tag):
     # 将已经分配的标签从"tags_pool_delete"中移到"tags_pool"中
     ok = red.smove(DevConfig.redis_key_delete_tag, DevConfig.redis_key_all_tags, tag)
     if ok:
-        return jsonify({"res": 'ok'})
-    else:
-        return jsonify({"res": 'error'})
+        res = make_response(jsonify({"res": 'ok'}))
+        res.headers['Access-Control-Allow-Origin'] = '*'
+        res.headers['Access-Control-Allow-Methods'] = 'POST'
+        res.headers['Access-Control-Allow-Headers'] = 'x-requested-with,content-type'
+        return res
 
 
 if __name__ == "__main__":
