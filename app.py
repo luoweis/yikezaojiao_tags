@@ -79,7 +79,7 @@ def get_tags():
          "delete_tags_list":delete_tags_pool}
     ))
     res.headers['Access-Control-Allow-Origin'] = '*'
-    res.headers['Access-Control-Allow-Methods'] = 'POST'
+    res.headers['Access-Control-Allow-Methods'] = 'GET'
     res.headers['Access-Control-Allow-Headers'] = 'x-requested-with,content-type'
     return res
 #提取redis数据库大标签的数量在前端进行数据可视化
@@ -93,8 +93,8 @@ def level1_tags_count():
 
     res = make_response(jsonify({"level1_number": level1_number}))
     res.headers['Access-Control-Allow-Origin'] = '*'
-    res.headers['Access-Control-Allow-Methods'] = 'POST'
-    res.headers['Access-Control-Allow-Headers'] = 'x-requested-with,content-type'
+    res.headers['Access-Control-Allow-Methods'] = 'GET'
+    res.headers['Access-Control-Allow-Headers'] = 'x-requested-with,content-type,contentType'
     return res
 #前端提交的数据在这里准备写入redis数据库中
 # # 前端调用方法： curl -i -H "Content-Type:application/json" -X POST -d '{"chooseLevel1":u"cf1","tag":u"尿不湿"}' http://localhost:5000/yikezaojiao/api/aboutTag/v1.0/save
@@ -124,7 +124,7 @@ def save_tags():
     res = make_response(jsonify({"saved":save_success}))
     res.headers['Access-Control-Allow-Origin'] = '*'
     res.headers['Access-Control-Allow-Methods'] = 'POST'
-    res.headers['Access-Control-Allow-Headers'] = 'x-requested-with,content-type'
+    res.headers['Access-Control-Allow-Headers'] = 'x-requested-with,content-type,contentType'
     return res
 #从可用标签池中删除指定的标签，提前预处理
 @app.route("/yikezaojiao/api/aboutTag/v1.0/delete/<string:tag>", methods=['GET'])
@@ -138,7 +138,7 @@ def delete_tag(tag):
     if ok:
         res = make_response(jsonify({"res": 'ok'}))
         res.headers['Access-Control-Allow-Origin'] = '*'
-        res.headers['Access-Control-Allow-Methods'] = 'POST'
+        res.headers['Access-Control-Allow-Methods'] = 'GET'
         res.headers['Access-Control-Allow-Headers'] = 'x-requested-with,content-type'
         return res
 
@@ -153,7 +153,7 @@ def recovery_tag(tag):
     if ok:
         res = make_response(jsonify({"res": 'ok'}))
         res.headers['Access-Control-Allow-Origin'] = '*'
-        res.headers['Access-Control-Allow-Methods'] = 'POST'
+        res.headers['Access-Control-Allow-Methods'] = 'GET'
         res.headers['Access-Control-Allow-Headers'] = 'x-requested-with,content-type'
         return res
 
