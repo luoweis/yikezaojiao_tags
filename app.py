@@ -1,5 +1,5 @@
 # -*- coding:utf-8 -*-
-from flask import Flask,jsonify
+from flask import Flask,jsonify,make_response
 from config import ProdConfig,DevConfig
 from flask import abort
 from flask import make_response
@@ -72,7 +72,16 @@ def get_tags():
             'count':red.scard(level['detail']),
             'tags':list(red.smembers(level['detail']))#将set格式通过list转换成列表否则json化会报错
         })
-    return jsonify({"tags_list":tags_pool,"deal_tags_list":deal_tags_pool,"level1_tags":level1_tags,"delete_tags_list":delete_tags_pool})
+    res = make_response(jsonify(
+        {"tags_list":tags_pool,
+         "deal_tags_list":deal_tags_pool,
+         "level1_tags":level1_tags,
+         "delete_tags_list":delete_tags_pool}
+    ))
+    res.headers['Access-Control-Allow-Origin'] = '*'
+    res.headers['Access-Control-Allow-Methods'] = 'POST'
+    res.headers['Access-Control-Allow-Headers'] = 'x-requested-with,content-type'
+    return res
 #提取redis数据库大标签的数量在前端进行数据可视化
 @app.route("/yikezaojiao/api/aboutTag/v1.0/level1/count", methods=['GET'])
 # @auth.login_required
