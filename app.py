@@ -124,7 +124,7 @@ def save_tags():
     res = make_response(jsonify({"saved":save_success}))
     res.headers['Access-Control-Allow-Origin'] = '*'
     res.headers['Access-Control-Allow-Methods'] = 'POST'
-    res.headers['Access-Control-Allow-Headers'] = 'x-requested-with,content-type,Content-Type'
+    res.headers['Access-Control-Allow-Headers'] = "accept, content-type"
     return res
 #从可用标签池中删除指定的标签，提前预处理
 @app.route("/yikezaojiao/api/aboutTag/v1.0/delete/<string:tag>", methods=['GET'])
@@ -159,7 +159,7 @@ def recovery_tag(tag):
 
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0',port=8080)
+    app.run()
 
 
 #链接数据库
