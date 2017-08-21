@@ -123,7 +123,7 @@ def save_tags():
 
     res = make_response(jsonify({"saved":save_success}))
     res.headers['Access-Control-Allow-Origin'] = '*'
-    res.headers['Access-Control-Allow-Methods'] = 'POST'
+    res.headers['Access-Control-Allow-Methods'] = 'POST,GET'
     res.headers['Access-Control-Allow-Headers'] = "accept, content-type"
     return res
 #从可用标签池中删除指定的标签，提前预处理
