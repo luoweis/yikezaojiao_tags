@@ -1,5 +1,5 @@
 # -*- coding:utf-8 -*-
-from flask import Flask,jsonify,make_response
+from flask import Flask,jsonify
 from config import ProdConfig,DevConfig
 from flask import abort
 from flask import make_response
@@ -9,6 +9,7 @@ from yikezaojiao_redis import yikezaojiao_redis
 from tagLevel1 import level1
 from flask_cors import CORS
 app = Flask(__name__)
+# 解决跨域访问的问题
 CORS(app)
 
 #加载开发配置
@@ -74,15 +75,7 @@ def get_tags():
             'count':red.scard(level['detail']),
             'tags':list(red.smembers(level['detail']))#将set格式通过list转换成列表否则json化会报错
         })
-    # res = make_response(jsonify(
-    #     {"tags_list":tags_pool,
-    #      "deal_tags_list":deal_tags_pool,
-    #      "level1_tags":level1_tags,
-    #      "delete_tags_list":delete_tags_pool}
-    # ))
-    # res.headers['Access-Control-Allow-Origin'] = '*'
-    # res.headers['Access-Control-Allow-Methods'] = 'GET'
-    # res.headers['Access-Control-Allow-Headers'] = 'x-requested-with,content-type'
+
 
     return jsonify(
         {"tags_list":tags_pool,
@@ -99,11 +92,6 @@ def level1_tags_count():
     for level in level1:
         level1_number[level['detail']] = red.scard(level['detail'])
 
-    # res = make_response(jsonify({"level1_number": level1_number}))
-    # res.headers['Access-Control-Allow-Origin'] = '*'
-    # res.headers['Access-Control-Allow-Methods'] = 'GET'
-    # res.headers['Access-Control-Allow-Headers'] = 'x-requested-with,content-type,contentType'
-    # return res
     return jsonify({"level1_number": level1_number})
 #前端提交的数据在这里准备写入redis数据库中
 # # 前端调用方法： curl -i -H "Content-Type:application/json" -X POST -d '{"chooseLevel1":u"cf1","tag":u"尿不湿"}' http://localhost:5000/yikezaojiao/api/aboutTag/v1.0/save
@@ -130,11 +118,6 @@ def save_tags():
     #将已经分配的标签从可用标签池中移动到已处理的标签池中
     red.smove(DevConfig.redis_key_all_tags,DevConfig.redis_key_deal_tag,request.json['tag'])
 
-    # res = make_response(jsonify({"saved":save_success}))
-    # res.headers['Access-Control-Allow-Origin'] = '*'
-    # res.headers['Access-Control-Allow-Methods'] = 'POST,GET'
-    # res.headers['Access-Control-Allow-Headers'] = "accept, content-type"
-    # return res
     return jsonify({"saved":save_success})
 #从可用标签池中删除指定的标签，提前预处理
 @app.route("/yikezaojiao/api/aboutTag/v1.0/delete/<string:tag>", methods=['GET'])

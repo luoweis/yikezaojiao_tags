@@ -2,6 +2,7 @@
  * Created by luoweis on 2017/8/15.
  */
 // 基于准备好的dom，初始化echarts实例
+
 var myChart1 = echarts.init(document.getElementById('main1'));
 app.title = '';
 var dmax = 0;
@@ -19,12 +20,12 @@ option1 = {
     radar: [
         {
             indicator: [
-                {text: '生理发育', max: dmax},
-                {text: '自然教育', max: dmax},
-                {text: '情绪品格', max: dmax},
-                {text: '语言能力', max: dmax},
-                {text: '社会交往', max: dmax},
-                {text: '逻辑思维', max: dmax}
+                {text: '语言交流', max: dmax},
+                {text: '感觉运动', max: dmax},
+                {text: '认知发展', max: dmax},
+                {text: '数理逻辑', max: dmax},
+                {text: '情绪表达', max: dmax},
+                {text: '社群交往', max: dmax}
             ],
             // center: ['25%','40%'],
             radius: 80
@@ -66,12 +67,13 @@ function changeData1() {
             // for(var i=0;i<option.legend.data;i++) {
             //     option.series[0].data[i].value = res.level1_number[option.legend.data[i]];
             // }
-            option1.series[0].data[0].value[0]=res.level1_number['生理发育'];
-            option1.series[0].data[0].value[1]=res.level1_number['自然教育'];
-            option1.series[0].data[0].value[2]=res.level1_number['情绪品格'];
-            option1.series[0].data[0].value[3]=res.level1_number['语言能力'];
-            option1.series[0].data[0].value[4]=res.level1_number['社会交往'];
-            option1.series[0].data[0].value[5]=res.level1_number['逻辑思维'];
+            //语言交流，感觉运动，认知发展，数理逻辑，情绪表达，社群交往
+            option1.series[0].data[0].value[0]=res.level1_number['语言交流'];
+            option1.series[0].data[0].value[1]=res.level1_number['感觉运动'];
+            option1.series[0].data[0].value[2]=res.level1_number['认知发展'];
+            option1.series[0].data[0].value[3]=res.level1_number['数理逻辑'];
+            option1.series[0].data[0].value[4]=res.level1_number['情绪表达'];
+            option1.series[0].data[0].value[5]=res.level1_number['社群交往'];
             // dmax = sum(option1.series[0].data[0].value);
             dmax = Math.max.apply(null, option1.series[0].data[0].value) * 1.2;
             option1.radar[0].indicator[0].max=dmax;

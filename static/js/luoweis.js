@@ -3,15 +3,6 @@
  */
 var host = config.server + "/yikezaojiao/api";
 var id = 0;
-var level1Init =
-    [
-        {id:'cf1',name:'生理',detail:'生理发育',check:true,num:1},//生理发育为默认
-        {id:'cf2',name:'自然',detail:'自然教育',check:false,num:2},
-        {id:'cf3',name:'情绪',detail:'情绪品格',check:false,num:3},
-        {id:'cf4',name:'语言',detail:'语言能力',check:false,num:4},
-        {id:'cf5',name:'社交',detail:'社会交往',check:false,num:5},
-        {id:'cf6',name:'逻辑',detail:'逻辑思维',check:false,num:6}
-    ];
 Vue.filter('top5', function(tags) {
     return tags.slice(0,4);
 });
@@ -28,7 +19,7 @@ var yikezaojiao = new Vue({
         deletedTags:[],
         dealTags:[],
         welcome:"一刻早教标签系统，欢迎使用！",
-        ykzjTagLevel1:level1Init,
+        ykzjTagLevel1:config.level1Init,
         isA:true,
         isShow:true,
         isShowDelete:true,
@@ -92,15 +83,7 @@ var yikezaojiao = new Vue({
                     yikezaojiao.$data.tagNow = that.allTags[id];
                     yikezaojiao.$data.welcome = false;
                     //重置默认设置
-                    yikezaojiao.$data.ykzjTagLevel1=
-                        [
-                        {id:'cf1',name:'生理',detail:'生理发育',check:true,num:1},//生理发育为默认
-                        {id:'cf2',name:'自然',detail:'自然教育',check:false,num:2},
-                        {id:'cf3',name:'情绪',detail:'情绪品格',check:false,num:3},
-                        {id:'cf4',name:'语言',detail:'语言能力',check:false,num:4},
-                        {id:'cf5',name:'社交',detail:'社会交往',check:false,num:5},
-                        {id:'cf6',name:'逻辑',detail:'逻辑思维',check:false,num:6}
-                        ];
+                    yikezaojiao.$data.ykzjTagLevel1=config.level1Init;
                     // console.log(level1Init);
                     yikezaojiao.$data.saved = data.saved;
                     yikezaojiao.$data.dealTags.unshift(that.lastTag);
@@ -138,7 +121,7 @@ var yikezaojiao = new Vue({
                         yikezaojiao.$data.deletedTags.unshift(tag);
                         //转换现在的要处理的标签
                         if(yikezaojiao.$data.tagNow=tag) {
-                            yikezaojiao.$data.tagNow = yikezaojiao.$data.allTags[0]
+                            yikezaojiao.$data.tagNow = yikezaojiao.$data.allTags[0];
                             that.availabilityNum = that.allTags.length;
                             that.deletedNum = that.deletedTags.length;
                         }

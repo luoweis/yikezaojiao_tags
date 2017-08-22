@@ -13,7 +13,7 @@ option = {
     legend: {
         orient: 'vertical',
         x: 'left',
-        data:["生理发育","自然教育","情绪品格","语言能力","社会交往","逻辑思维"]
+        data:["语言交流","感觉运动","认知发展","数理逻辑","情绪表达","社群交往"]
     },
     series: [
         {
@@ -40,12 +40,12 @@ option = {
                 }
             },
             data:[
-                {value:335, name:'生理发育'},
-                {value:310, name:'自然教育'},
-                {value:234, name:'情绪品格'},
-                {value:135, name:'语言能力'},
-                {value:456, name:'社会交往'},
-                {value:789, name:'逻辑思维'}
+                {value:335, name:'语言交流'},
+                {value:310, name:'感觉运动'},
+                {value:234, name:'认知发展'},
+                {value:135, name:'数理逻辑'},
+                {value:456, name:'情绪表达'},
+                {value:789, name:'社群交往'}
             ]
         }
     ]
